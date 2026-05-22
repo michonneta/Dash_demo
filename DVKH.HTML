@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Dịch Vụ Khách Hàng | HV Holdings</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #06A7E1; --success: #26A557; --danger: #f43f5e; --warning: #71BF44; --dark: #58585A;
+            --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-400: #94a3b8; --slate-800: #1e293b;
+            --white: #ffffff; --shadow: 0 4px 20px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f4f7fa; color: var(--slate-800); margin: 0; padding: 20px; }
+        .container { max-width: 1750px; margin: 0 auto; }
+
+        /* Dashboard Header */
+        .dashboard-header { margin-bottom: 25px; border-bottom: 2px solid var(--slate-100); padding-bottom: 15px; }
+        .dashboard-header h1 { font-size: 30px; font-weight: 800; margin: 0; color: var(--dark); letter-spacing: -0.5px; }
+
+        /* Navigation Tabs */
+        .tab-nav { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { padding: 12px 24px; cursor: pointer; border-radius: 10px; font-weight: 700; background: var(--white); border: 1px solid var(--slate-100); color: var(--slate-400); transition: 0.3s; font-size: 13px; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Global Slicers */
+        .slicer-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: var(--white); padding: 15px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 20px; }
+        .filter-item label { display: block; font-size: 11px; font-weight: 700; color: var(--slate-400); text-transform: uppercase; margin-bottom: 6px; }
+        .filter-item select { width: 100%; border: 1px solid var(--slate-100); background: #fdfdfd; padding: 8px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--slate-800); }
+
+        /* Highlight KPIs */
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .kpi-card { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: var(--shadow); border: 1px solid #fff; }
+        .kpi-label { color: var(--slate-400); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-value { font-size: 26px; font-weight: 800; margin: 5px 0; color: var(--slate-800); }
+        .kpi-target { font-size: 11px; font-weight: 600; }
+
+        /* Tab Content Control */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Layout Grid cho Biểu đồ */
+        .chart-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .chart-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .chart-box { background: var(--white); padding: 18px; border-radius: 16px; box-shadow: var(--shadow); height: 280px; }
+
+        /* Layout 2 Bảng cân đối bằng nhau tuyệt đối */
+        .tables-split { display: flex; gap: 20px; align-items: stretch; margin-bottom: 20px; }
+        .table-section { background: var(--white); padding: 22px; border-radius: 20px; box-shadow: var(--shadow); flex: 1; display: flex; flex-direction: column; }
+        .table-section h3 { font-size: 15px; color: var(--dark); margin: 0 0 15px 0; font-weight: 700; border-left: 4px solid var(--primary); padding-left: 10px; }
+        
+        /* Định vị tỷ lệ cột cho Tab Tổng quan (35% - 65%) và các Tab còn lại (50% - 50%) */
+        .split-35-65 .table-section.left { flex: 0 0 35%; }
+        .split-35-65 .table-section.right { flex: 0 0 calc(65% - 20px); }
+        .split-50-50 .table-section { flex: 1; }
+
+        /* Bảng chuẩn Grid Lines dữ liệu */
+        table { width: 100%; border-collapse: collapse; font-size: 11.5px; flex-grow: 1; }
+        th, td { border: 1px solid var(--slate-100); padding: 10px; text-align: center; }
+        th { background: #f8fafc; color: var(--slate-800); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .row-label { text-align: left; font-weight: 700; background: #fff; position: sticky; left: 0; color: var(--slate-800); min-width: 120px; }
+        
+        .good { color: var(--success); font-weight: 700; }
+        .bad { color: var(--danger); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="dashboard-header">
+        <h1>Hiệu suất kinh doanh - Phòng Dịch vụ Khách hàng</h1>
+    </div>
+
+    <div class="tab-nav">
+        <div class="tab-btn active" onclick="switchTab(event, 'tab-overview')">TAB TỔNG QUAN</div>
+        <div class="tab-btn" onclick="switchTab(event, 'tab-consult')">TƯ VẤN</div>
+        <div class="tab-btn" onclick="switchTab(event, 'tab-delivery')">CHĂM SÓC VẬN ĐƠN</div>
+        <div class="tab-btn" onclick="switchTab(event, 'tab-cskh')">TAB CSKH</div>
+    </div>
+
+    <div class="slicer-panel">
+        <div class="filter-item"><label>Tháng</label><select><option>Tháng 10</option><option>Tháng 11</option></select></div>
+        <div class="filter-item"><label>Tuần</label><select><option>Tất cả các tuần</option><option>Tuần 1</option><option>Tuần 2</option></select></div>
+        <div class="filter-item"><label>Nhân sự</label><select><option>Tất cả nhân sự</option><option>Tạ Thị Tuyến</option></select></div>
+    </div>
+
+    <div id="tab-overview" class="tab-content active">
+        <div class="kpi-row">
+            <div class="kpi-card"><div class="kpi-label">Doanh thu</div><div class="kpi-value">1,420M</div><small class="good">KPI: 1,300M (▲ 9.2%)</small></div>
+            <div class="kpi-card"><div class="kpi-label">Tỷ lệ chuyển đổi</div><div class="kpi-value">24.5%</div><small class="good">KPI: 22.0% (▲ 2.5%)</small></div>
+            <div class="kpi-card"><div class="kpi-label">Tỷ lệ giao hàng thành công</div><div class="kpi-value">91.2%</div><small class="good">KPI: 90.0% (▲ 1.2%)</small></div>
+            <div class="kpi-card"><div class="kpi-label">Tỷ lệ gia hạn</div><div class="kpi-value">68.4%</div><small class="bad">KPI: 70.0% (▼ 1.6%)</small></div>
+        </div>
+        <div class="chart-grid-4">
+            <div class="chart-box"><canvas id="ovChartRev"></canvas></div>
+            <div class="chart-box"><canvas id="ovChartCvr"></canvas></div>
+            <div class="chart-box"><canvas id="ovChartDeliv"></canvas></div>
+            <div class="chart-box"><canvas id="ovChartRenew"></canvas></div>
+        </div>
+        <div class="tables-split split-35-65">
+            <div class="table-section left">
+                <h3>Bảng tổng hợp bên trái (Theo BU)</h3>
+                <table>
+                    <thead>
+                        <tr><th class="row-label">BU</th><th>Tổng doanh thu</th><th>DT Mới</th><th>DT Mua lại</th><th>Tỷ lệ CĐ</th><th>Tỷ lệ giao thành công</th><th>Tỷ lệ mua lại</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="row-label">BU SATA</td><td>850M</td><td>500M</td><td>350M</td><td>25.1%</td><td>92.0%</td><td>41.2%</td></tr>
+                        <tr><td class="row-label">BU ABERA</td><td>570M</td><td>320M</td><td>250M</td><td>23.8%</td><td>90.1%</td><td>43.8%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-section right">
+                <h3>Bảng tổng hợp bên phải (Theo Tuần)</h3>
+                <table>
+                    <thead>
+                        <tr><th class="row-label">Chỉ số</th><th>W1</th><th>W2</th><th>W3</th><th>W4</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="row-label">Tổng doanh thu</td><td>320M</td><td>380M</td><td>340M</td><td>380M</td></tr>
+                        <tr><td class="row-label">Doanh thu mới</td><td>180M</td><td>210M</td><td>190M</td><td>240M</td></tr>
+                        <tr><td class="row-label">Doanh thu mua lại</td><td>140M</td><td>170M</td><td>150M</td><td>140M</td></tr>
+                        <tr><td class="row-label">Tỷ lệ chuyển đổi</td><td>23.4%</td><td>24.8%</td><td>24.1%</td><td>25.7%</td></tr>
+                        <tr><td class="row-label">Tỷ lệ giao hàng thành công</td><td>90.5%</td><td>91.8%</td><td>90.9%</td><td>91.6%</td></tr>
+                        <tr><td class="row-label">Tỷ lệ mua lại</td><td>40.2%</td><td>42.1%</td><td>41.5%</td><td>43.0%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-consult" class="tab-content">
+        <div class="kpi-row">
+            <div class="kpi-card"><div class="kpi-label">Doanh thu</div><div class="kpi-value">920M</div><small class="good">KPI: 900M</small></div>
+            <div class="kpi-card"><div class="kpi-label">Tỷ lệ chuyển đổi</div><div class="kpi-value">23.8%</div><small class="good">KPI: 22.0%</small></div>
+            <div class="kpi-card"><div class="kpi-label">AOV (Giá trị đơn)</div><div class="kpi-value">345k</div><small class="good">KPI: 330k</small></div>
+            <div class="kpi-card"><div class="kpi-label">AOI (Số món/đơn)</div><div class="kpi-value">1.4</div><small class="bad">KPI: 1.5</small></div>
+        </div>
+        <div class="chart-grid-3" style="grid-template-columns: 100%;">
+            <div class="chart-box" style="height: 300px;"><canvas id="conChartTopStaff"></canvas></div>
+        </div>
+        <div class="tables-split split-50-50">
+            <div class="table-section">
+                <h3>Bảng tổng hợp theo Sản phẩm</h3>
+                <table>
+                    <thead>
+                        <tr><th class="row-label">Sản phẩm</th><th>Doanh thu</th><th>AOV</th><th>AOI</th><th>Tỷ lệ chuyển đổi</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="row-label">Sản phẩm Serum A</td><td>420M</td><td>350k</td><td>1.4</td><td>24.2%</td></tr>
+                        <tr><td class="row-label">Sản phẩm Cream B</td><td>310M</td><td>320k</td><td>1.3</td><td>22.5%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-section">
+                <h3>Bảng tổng hợp theo Nhân sự</h3>
+                <table>
+                    <thead>
+                        <tr><th class="row-label">Nhân sự</th><th>Doanh thu</th><th>AOV</th><th>AOI</th><th>Lead</th><th>Lên đơn</th><th>Tỷ lệ chuyển đổi</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="row-label">Tạ Thị Tuyến</td><td>150M</td><td>360k</td><td>1.5</td><td>1,200</td><td>290</td><td>24.1%</td></tr>
+                        <tr><td class="row-label">Nguyễn Văn A</td><td>120M</td><td>340k</td><td>1.3</td><td>1,100</td><td>240</td><td>21.8%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-delivery" class="tab-content">
+        <div class="kpi-row">
+            <div class="kpi-card"><div class="kpi-label">Tổng đơn</div><div class="kpi-value">5,240</div><small class="good">KPI: 5,000</small></div>
+            <div class="kpi-card"><div class="kpi-label">Tỷ lệ giao hàng thành công</div><div class="kpi-value">92.4%</div><small class="good">KPI: 91.0%</small></div>
+            <div class="kpi-card"><div class="kpi-label">Tổng giá trị nhận</div><div class="kpi-value">1,620M</div><small class="good">KPI: 1,500M</small></div>
+            <div class="kpi-card"><div class="kpi-label">Tổng giá trị hủy</div><div class="kpi-value">45M</div><small class="good">Kiểm soát tốt &lt; 50M</small></div>
+        </div>
+        <div class="chart-grid-3">
+            <div class="chart-box"><canvas id="delChartMix"></canvas></div>
+            <div class="chart-box"><canvas id="delChartTopStaff"></canvas></div>
+            <div class="chart-box"><canvas id="delChartPieShare"></canvas></div>
+        </div>
+        <div class="tables-split split-50-50">
+            <div class="table-section">
+                <h3>Bảng theo Đối tác vận chuyển</h3>
+                <table>
+                    <thead>
+                        <tr><th class="row-label">Đối tác</th><th>Tổng đơn</th><th>Tỷ lệ thành công</th><th>Đang xử lý</th><th>Đơn hủy</th><th>Giá trị nhận</th><th>Giá trị hủy</th><th>Giá trị thành công</th><th>Giá trị đang xử lý</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="row-label">Giao Hàng Nhanh (GHN)</td><td>2,450</td><td>92.8%</td><td>120</td><td>55</td><td>820M</td><td>18M</td><td>760M</td><td>42M</td></tr>
+                        <tr><td class="row-label">Giao Hàng Tiết Kiệm (GHTK)</td><td>2,100</td><td>91.5%</td><td>95</td><td>60</td><td>680M</td><td>20M</td><td>620M</td><td>40M</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-section">
+                <h3>Bảng theo Nhân sự</h3>
+                <table>
+                    <thead>
+                        <tr><th class="row-label">Nhân sự</th><th>Tổng đơn</th><th>Tỷ lệ thành công</th><th>Đang xử lý</th><th>Đơn hủy</th><th>Giá trị nhận</th><th>Giá trị hủy</th><th>Giá trị thành công</th><th>Giá trị đang xử lý</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="row-label">Tạ Thị Tuyến</td><td>650</td><td>94.2%</td><td>25</td><td>12</td><td>210M</td><td>4M</td><td>198M</td><td>8M</td></tr>
+                        <tr><td class="row-label">Nguyễn Văn A</td><td>580</td><td>91.8%</td><td>30</td><td>18</td><td>190M</td><td>6M</td><td>174M</td><td>10M</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-cskh" class="tab-content">
+        <div class="kpi-row">
+            <div class="kpi-card"><div class="kpi-label">Doanh thu</div><div class="kpi-value">510M</div><small class="good">KPI: 480M</small></div>
+            <div class="kpi-card"><div class="kpi-label">Tỷ lệ mua lại</div><div class="kpi-value">42.5%</div><small class="good">KPI: 40.0%</small></div>
+            <div class="kpi-card"><div class="kpi-label">Số Ticket</div><div class="kpi-value">340</div><small class="good">Giảm 12% phản ánh</small></div>
+            <div class="kpi-card"><div class="kpi-label">% SLA Đúng hạn</div><div class="kpi-value">96.8%</div><small class="good">KPI: 95.0%</small></div>
+        </div>
+        <div class="chart-grid-3" style="grid-template-columns: 50% 50%;">
+            <div class="chart-box"><canvas id="cskhChartMixRev"></canvas></div>
+            <div class="chart-box"><canvas id="cskhChartMixTicket"></canvas></div>
+        </div>
+        <div class="chart-grid-3" style="grid-template-columns: 100%;">
+            <div class="chart-box" style="height: 240px;"><canvas id="cskhChartTopStaff"></canvas></div>
+        </div>
+        <div class="tables-split split-50-50">
+            <div class="table-section">
+                <h3>Bảng tổng hợp xử lý khiếu nại</h3>
+                <table>
+                    <thead>
+                        <tr><th class="row-label">Nhân sự</th><th>Số ticket</th><th>%SLA đúng hạn</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="row-label">Tạ Thị Tuyến</td><td>45</td><td>98.5%</td></tr>
+                        <tr><td class="row-label">Nguyễn Văn A</td><td>52</td><td>95.2%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-section">
+                <h3>Bảng tổng hợp gia hạn</h3>
+                <table>
+                    <thead>
+                        <tr><th class="row-label">Nhân sự</th><th>Doanh thu</th><th>Data</th><th>Tỷ lệ gia hạn</th><th>AOV</th><th>AOI</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="row-label">Tạ Thị Tuyến</td><td>140M</td><td>350</td><td>72.4%</td><td>350k</td><td>1.4</td></tr>
+                        <tr><td class="row-label">Nguyễn Văn A</td><td>110M</td><td>320</td><td>66.8%</td><td>330k</td><td>1.3</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Hàm chuyển đổi các Tab mượt mà
+    function switchTab(evt, tabId) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        evt.currentTarget.classList.add('active');
+    }
+
+    // Cấu hình Base Chart Options
+    const getChartOptions = (title, type = 'line') => ({
+        responsive: true, maintainAspectRatio: false,
+        plugins: { 
+            legend: { position: 'top', labels: { usePointStyle: true, font: { size: 10, weight: '600' } } },
+            title: { display: true, text: title, font: { size: 13, weight: '700' }, align: 'start' }
+        },
+        scales: type === 'pie' ? {} : {
+            x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10, weight: '600' } } },
+            y: { grid: { color: '#f1f5f9' }, border: { display: false }, ticks: { font: { size: 10 } } }
+        }
+    });
+
+    // --- TAB 1: TỔNG QUAN CHARTS ---
+    // Biểu đồ Doanh thu phân rã Mới / Mua lại (Stacked Column Chart)
+    new Chart(document.getElementById('ovChartRev'), {
+        type: 'bar',
+        data: {
+            labels: ['T7', 'T8', 'T9', 'T10'],
+            datasets: [
+                { label: 'Nguồn Mới', data: [450, 520, 480, 500], backgroundColor: '#06A7E1' },
+                { label: 'Mua Lại', data: [300, 310, 320, 350], backgroundColor: '#58585A' }
+            ]
+        },
+        options: { ...getChartOptions('Doanh thu theo Tháng (M)', 'bar'), scales: { x: { stacked: true, grid: {display:false} }, y: { stacked: true, grid: {color: '#f1f5f9'} } } }
+    });
+    // Trend Tỷ lệ Chuyển đổi
+    new Chart(document.getElementById('ovChartCvr'), { type: 'line', data: { labels: ['T7', 'T8', 'T9', 'T10'], datasets: [{ label: 'Tỷ lệ CĐ (%)', data: [22.4, 23.5, 24.1, 24.5], borderColor: '#26A557', tension: 0.4 }] }, options: getChartOptions('Trend Tỷ lệ Chuyển đổi') });
+    // Trend Tỷ lệ Giao hàng thành công
+    new Chart(document.getElementById('ovChartDeliv'), { type: 'line', data: { labels: ['T7', 'T8', 'T9', 'T10'], datasets: [{ label: 'Thành công (%)', data: [89.5, 90.2, 91.0, 91.2], borderColor: '#71BF44', tension: 0.4 }] }, options: getChartOptions('Trend Tỷ lệ Giao thành công') });
+    // Trend Tỷ lệ Gia hạn
+    new Chart(document.getElementById('ovChartRenew'), { type: 'line', data: { labels: ['T7', 'T8', 'T9', 'T10'], datasets: [{ label: 'Gia hạn (%)', data: [65.2, 67.1, 68.0, 68.4], borderColor: '#f43f5e', tension: 0.4 }] }, options: getChartOptions('Trend Tỷ lệ Gia hạn') });
+
+
+    // --- TAB 2: TƯ VẤN CHARTS ---
+    new Chart(document.getElementById('conChartTopStaff'), {
+        type: 'bar',
+        data: { labels: ['Tạ Thị Tuyến', 'Nguyễn Văn A', 'Lê Quỳnh', 'Thái Bảo'], datasets: [{ data: [150, 120, 105, 95], backgroundColor: '#06A7E1', barThickness: 20 }] },
+        options: { ...getChartOptions('Top Nhân sự Doanh thu cao nhất (M)', 'bar'), indexAxis: 'y' }
+    });
+
+
+    // --- TAB 3: CHĂM SÓC VẬN ĐƠN CHARTS ---
+    // Mix Chart: Cột số lượng đơn, Line tỷ lệ thành công theo thời gian
+    new Chart(document.getElementById('delChartMix'), {
+        type: 'bar',
+        data: {
+            labels: ['W1', 'W2', 'W3', 'W4'],
+            datasets: [
+                { type: 'bar', label: 'Số lượng đơn', data: [1200, 1350, 1290, 1400], backgroundColor: '#94a3b8', yAxisID: 'y' },
+                { type: 'line', label: 'Tỷ lệ giao TC (%)', data: [90.5, 91.8, 90.9, 91.6], borderColor: '#26A557', tension: 0.4, yAxisID: 'y1' }
+            ]
+        },
+        options: {
+            ...getChartOptions('Hiệu suất đơn vị vận chuyển theo tuần'),
+            scales: { y: { type: 'linear', position: 'left' }, y1: { type: 'linear', position: 'right', grid: { display: false } } }
+        }
+    });
+    // Top nhân sự giao hàng thành công tốt nhất
+    new Chart(document.getElementById('delChartTopStaff'), {
+        type: 'bar',
+        data: { labels: ['Tạ Thị Tuyến', 'Lê Quỳnh', 'Thái Bảo'], datasets: [{ data: [94.2, 93.5, 92.1], backgroundColor: '#71BF44', barThickness: 15 }] },
+        options: { ...getChartOptions('Top Nhân viên có Tỷ lệ giao thành công tốt nhất (%)', 'bar'), indexAxis: 'y' }
+    });
+    // Tỷ trọng trạng thái đơn hàng (Pie/Doughnut)
+    new Chart(document.getElementById('delChartPieShare'), {
+        type: 'doughnut',
+        data: { labels: ['Đơn hoàn thành', 'Đơn đang xử lý', 'Đơn hủy'], datasets: [{ data: [85, 12, 3], backgroundColor: ['#26A557', '#06A7E1', '#f43f5e'] }] },
+        options: getChartOptions('Tỷ trọng trạng thái Đơn hàng', 'pie')
+    });
+
+
+    // --- TAB 4: TAB CSKH CHARTS ---
+    // Mix Chart: Cột doanh thu, Line tỷ lệ mua lại theo thời gian
+    new Chart(document.getElementById('cskhChartMixRev'), {
+        type: 'bar',
+        data: {
+            labels: ['W1', 'W2', 'W3', 'W4'],
+            datasets: [
+                { type: 'bar', label: 'Doanh thu (M)', data: [120, 140, 115, 135], backgroundColor: '#06A7E1' },
+                { type: 'line', label: 'Tỷ lệ mua lại (%)', data: [40.2, 42.1, 41.5, 43.0], borderColor: '#58585A', tension: 0.4, yAxisID: 'y1' }
+            ]
+        },
+        options: { ...getChartOptions('Doanh thu & Tỷ lệ mua lại theo thời gian'), scales: { y: { type: 'linear', position: 'left' }, y1: { type: 'linear', position: 'right', grid: { display: false } } } }
+    });
+    // Mix Chart: Cột số Ticket, Line % SLA đúng hạn theo thời gian
+    new Chart(document.getElementById('cskhChartMixTicket'), {
+        type: 'bar',
+        data: {
+            labels: ['W1', 'W2', 'W3', 'W4'],
+            datasets: [
+                { type: 'bar', label: 'Số Ticket', data: [85, 92, 78, 85], backgroundColor: '#94a3b8' },
+                { type: 'line', label: '% SLA đúng hạn', data: [95.8, 96.2, 97.1, 96.8], borderColor: '#f43f5e', tension: 0.4, yAxisID: 'y1' }
+            ]
+        },
+        options: { ...getChartOptions('Số lượng Ticket & Tỷ lệ SLA đúng hạn'), scales: { y: { type: 'linear', position: 'left' }, y1: { type: 'linear', position: 'right', grid: { display: false } } } }
+    });
+    // Top Nhân sự doanh thu cao nhất
+    new Chart(document.getElementById('cskhChartTopStaff'), {
+        type: 'bar',
+        data: { labels: ['Tạ Thị Tuyến', 'Nguyễn Văn A', 'Lê Quỳnh'], datasets: [{ data: [140, 110, 95], backgroundColor: '#06A7E1', barThickness: 15 }] },
+        options: { ...getChartOptions('TOP Nhân sự CSKH có doanh thu cao nhất (M)', 'bar'), indexAxis: 'y' }
+    });
+</script>
+
+</body>
+</html>
