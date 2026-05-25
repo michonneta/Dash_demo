@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Dashboard Professional - Updated</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Inter', sans-serif; }
+        .filter-card { background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .kpi-card { background: white; border-radius: 10px; padding: 1rem; border-top: 4px solid #2563eb; }
+        .chart-container { background: white; border-radius: 12px; padding: 1.5rem; height: 320px; }
+        .table-container { background: white; border-radius: 12px; overflow: hidden; }
+        .status-up { color: #059669; font-weight: bold; }
+        .status-down { color: #dc2626; font-weight: bold; }
+        th, td { border: 1px solid #e5e7eb; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-[1600px] mx-auto">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-extrabold text-gray-800 uppercase tracking-tight">Dashboard Marketing</h1>
+            <div class="text-gray-500 font-medium">Cập nhật: 24/04/2026</div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="filter-card">
+                <h3 class="text-xs font-bold text-blue-600 uppercase mb-3"><i class="fas fa-calendar-alt mr-2"></i>Theo Thời Gian</h3>
+                <select class="w-full border p-2 rounded text-sm"><option>Ngày / Tuần / Tháng / Quý / Năm</option></select>
+            </div>
+            <div class="filter-card">
+                <h3 class="text-xs font-bold text-blue-600 uppercase mb-3"><i class="fas fa-sitemap mr-2"></i>Cơ cấu tổ chức</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <select class="border p-2 rounded text-sm"><option>BU</option></select>
+                    <select class="border p-2 rounded text-sm"><option>Thị trường</option></select>
+                    <select class="border p-2 rounded text-sm"><option>SubBU</option></select>
+                    <select class="border p-2 rounded text-sm"><option>Agent</option></select>
+                </div>
+            </div>
+            <div class="filter-card">
+                <h3 class="text-xs font-bold text-blue-600 uppercase mb-3"><i class="fas fa-box mr-2"></i>Sản phẩm</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <select class="border p-2 rounded text-sm"><option>Brand</option></select>
+                    <select class="border p-2 rounded text-sm"><option>SubBrand</option></select>
+                    <select class="col-span-2 border p-2 rounded text-sm"><option>SKU</option></select>
+                </div>
+            </div>
+            <div class="filter-card">
+                <h3 class="text-xs font-bold text-blue-600 uppercase mb-3"><i class="fas fa-network-wired mr-2"></i>Nền tảng & Kênh</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <select class="border p-2 rounded text-sm"><option>Nhóm (TMDT...)</option></select>
+                    <select class="border p-2 rounded text-sm"><option>Kênh Bán</option></select>
+                    <select class="border p-2 rounded text-sm"><option>Kênh Ads</option></select>
+                    <select class="border p-2 rounded text-sm"><option>URL chi tiết</option></select>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="kpi-card"><div class="text-gray-500 text-sm">Doanh số</div><div class="text-2xl font-bold">1,500,000,000</div></div>
+                <div class="kpi-card"><div class="text-gray-500 text-sm">Doanh thu</div><div class="text-2xl font-bold">1,350,000,000</div></div>
+                <div class="kpi-card"><div class="text-gray-500 text-sm">Đơn hàng</div><div class="text-2xl font-bold">4,200</div></div>
+                <div class="kpi-card"><div class="text-gray-500 text-sm">AOV</div><div class="text-2xl font-bold">321,400</div></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="kpi-card" style="border-color: #6366f1;"><div class="text-gray-500 text-sm">Ngân sách</div><div class="text-2xl font-bold">250,000,000</div></div>
+                <div class="kpi-card" style="border-color: #6366f1;"><div class="text-gray-500 text-sm">Chi phí/Đơn hàng</div><div class="text-2xl font-bold">59,500</div></div>
+                <div class="kpi-card" style="border-color: #6366f1;"><div class="text-gray-500 text-sm">%MKT</div><div class="text-2xl font-bold">18.5%</div></div>
+                <div class="kpi-card" style="border-color: #6366f1;"><div class="text-gray-500 text-sm">Tỷ lệ hủy</div><div class="text-2xl font-bold">4.2%</div></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="chart-container"><canvas id="chartDoanhSo"></canvas></div>
+            <div class="chart-container"><canvas id="chartDoanhThu"></canvas></div>
+            <div class="chart-container"><canvas id="chartNganSach"></canvas></div>
+            
+            <div class="chart-container"><canvas id="chartDonHang"></canvas></div>
+            <div class="chart-container"><canvas id="chartAOV"></canvas></div>
+            <div class="chart-container"><canvas id="chartCPO"></canvas></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="chart-container"><canvas id="chartMKTPercent"></canvas></div>
+            <div class="chart-container"><canvas id="chartTyLeHuy"></canvas></div>
+        </div>
+
+        <div class="mb-8">
+            <h2 class="text-lg font-bold mb-4">Bảng Chi Tiết 1: Hiệu suất theo thời gian</h2>
+            <div class="table-container shadow-lg overflow-x-auto">
+                <table class="w-full text-sm text-center border-collapse">
+                    <thead class="bg-gray-800 text-white uppercase text-xs">
+                        <tr>
+                            <th rowspan="2" class="p-4 text-left">Chỉ số</th>
+                            <th colspan="3" class="p-2 border-b">Ngày 23/04</th>
+                            <th colspan="3" class="p-2 border-b">Ngày 24/04</th>
+                        </tr>
+                        <tr class="bg-gray-700 text-[10px]">
+                            <th class="p-2">TH</th><th class="p-2">KH</th><th class="p-2">% TH/KH</th>
+                            <th class="p-2">TH</th><th class="p-2">KH</th><th class="p-2">% TH/KH</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr>
+                            <td class="p-3 text-left font-bold bg-gray-50">Doanh số</td>
+                            <td>120M</td><td>100M</td><td><span class="status-up">120%</span></td>
+                            <td>150M</td><td>140M</td><td><span class="status-up">107%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 text-left font-bold bg-gray-50">Doanh thu</td>
+                            <td>100M</td><td>90M</td><td><span class="status-up">111%</span></td>
+                            <td>130M</td><td>125M</td><td><span class="status-up">104%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 text-left font-bold bg-gray-50">Đơn hàng</td>
+                            <td>400</td><td>450</td><td><span class="status-down">88%</span></td>
+                            <td>420</td><td>430</td><td><span class="status-down">97%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 text-left font-bold bg-gray-50">Chi phí/Đơn</td>
+                            <td>55k</td><td>50k</td><td><span class="status-down">110%</span></td>
+                            <td>65k</td><td>55k</td><td><span class="status-down">118%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-bold mb-4">Bảng Chi Tiết 2: Hiệu suất theo URL</h2>
+            <div class="table-container shadow-lg overflow-x-auto">
+                <table class="w-full text-xs text-left whitespace-nowrap">
+                    <thead class="bg-blue-900 text-white uppercase">
+                        <tr>
+                            <th class="p-3 sticky left-0 bg-blue-900">URL</th>
+                            <th class="p-3">Doanh số</th><th class="p-3">Doanh thu</th><th class="p-3">Ngân sách</th>
+                            <th class="p-3">%MKT</th><th class="p-3">Đơn hàng</th><th class="p-3">AOV</th>
+                            <th class="p-3">CPO</th><th class="p-3">Tỷ lệ hủy</th><th class="p-3">Impression</th>
+                            <th class="p-3">Reach</th><th class="p-3">Clicks</th><th class="p-3">CTR</th>
+                            <th class="p-3">CVR</th><th class="p-3">CPC</th><th class="p-3">CPM</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 font-medium sticky left-0 bg-white">facebook.com/cpn_01</td>
+                            <td class="p-3">500M</td><td class="p-3">450M</td><td class="p-3">80M</td><td class="p-3">16%</td>
+                            <td class="p-3">1,200</td><td class="p-3">375k</td><td class="p-3">66k</td><td class="p-3">3%</td>
+                            <td class="p-3">1M</td><td class="p-3">400k</td><td class="p-3">25k</td><td class="p-3">2.5%</td>
+                            <td class="p-3">4.8%</td><td class="p-3">3,200đ</td><td class="p-3">80,000đ</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const createChart = (id, label, actual, plan) => {
+            const percentages = actual.map((v, i) => ((v / plan[i]) * 100).toFixed(0));
+            new Chart(document.getElementById(id), {
+                type: 'bar',
+                data: {
+                    labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                    datasets: [
+                        { label: 'Thực tế', data: actual, backgroundColor: '#2563eb', order: 2 },
+                        { label: 'Kế hoạch', data: plan, backgroundColor: '#e2e8f0', order: 3 },
+                        { 
+                            label: '% TH/KH', data: percentages, type: 'line', 
+                            borderColor: '#ef4444', borderWidth: 2, pointRadius: 3, 
+                            yAxisID: 'y1', order: 1, fill: false 
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { title: { display: true, text: label } },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Giá trị' } },
+                        y1: { 
+                            beginAtZero: true, position: 'right', 
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: '%' },
+                            ticks: { callback: v => v + '%' }
+                        }
+                    }
+                }
+            });
+        };
+
+        createChart('chartDoanhSo', 'Doanh Số', [120, 150, 140, 170, 200, 250, 230], [130, 130, 130, 130, 180, 220, 220]);
+        createChart('chartDoanhThu', 'Doanh Thu', [100, 130, 120, 140, 180, 220, 200], [110, 110, 110, 110, 160, 200, 200]);
+        createChart('chartNganSach', 'Ngân Sách', [40, 45, 50, 48, 60, 80, 75], [50, 50, 50, 50, 60, 70, 70]);
+        createChart('chartDonHang', 'Đơn Hàng', [350, 420, 400, 450, 500, 650, 600], [400, 400, 400, 400, 500, 600, 600]);
+        createChart('chartAOV', 'AOV', [300, 310, 305, 320, 315, 330, 325], [300, 300, 300, 300, 300, 300, 300]);
+        createChart('chartCPO', 'CPO', [55, 58, 62, 59, 65, 60, 58], [55, 55, 55, 55, 55, 55, 55]);
+        createChart('chartMKTPercent', '%MKT', [15, 16, 18, 15, 19, 17, 16], [15, 15, 15, 15, 15, 15, 15]);
+        createChart('chartTyLeHuy', 'Tỷ Lệ Hủy (%)', [4, 3.5, 5, 4.2, 3.8, 4.5, 4], [4, 4, 4, 4, 4, 4, 4]);
+    </script>
+</body>
+</html>
