@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Marketing | HV Holdings BI</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5; --success: #10b981; --danger: #f43f5e; --warning: #f59e0b; --info: #06b6d4;
+            --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-400: #94a3b8; --slate-800: #1e293b;
+            --white: #ffffff; --shadow: 0 4px 20px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f4f7fa; color: var(--slate-800); margin: 0; padding: 20px; }
+        .container { max-width: 1750px; margin: 0 auto; }
+
+        /* Title Area */
+        .dashboard-header { margin-bottom: 20px; border-bottom: 2px solid var(--slate-100); padding-bottom: 12px; }
+        .dashboard-header h1 { font-size: 28px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px; }
+
+        /* Navigation Pages Tabs */
+        .page-nav { display: flex; gap: 10px; margin-bottom: 20px; }
+        .page-btn { padding: 12px 24px; cursor: pointer; border-radius: 10px; font-weight: 700; background: var(--white); border: 1px solid var(--slate-100); color: var(--slate-400); transition: 0.3s; font-size: 13px; }
+        .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Dynamic Tab Content */
+        .page-content { display: none; }
+        .page-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Global Filter Panel */
+        .filter-panel { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; 
+            background: var(--white); padding: 18px; border-radius: 16px; 
+            box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid var(--slate-100);
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 4px; }
+        .filter-group label { font-size: 10px; font-weight: 700; color: var(--slate-400); text-transform: uppercase; letter-spacing: 0.5px; }
+        .sub-filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .filter-panel select { width: 100%; border: 1px solid var(--slate-100); background: var(--slate-50); padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+
+        /* Row 1: Highlight KPIs */
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .kpi-card { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: var(--shadow); border: 1px solid #fff; }
+        .kpi-label { color: var(--slate-400); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .kpi-value { font-size: 24px; font-weight: 800; margin: 5px 0; color: #0f172a; }
+        
+        /* Bookmark Layout Filters */
+        .bookmark-row { display: flex; gap: 8px; margin-bottom: 15px; background: #e2e8f0; padding: 6px; border-radius: 8px; width: fit-content; }
+        .bookmark-item { padding: 6px 16px; font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 6px; color: var(--slate-800); transition: 0.2s; }
+        .bookmark-item.active { background: var(--white); box-shadow: var(--shadow); color: var(--primary); }
+
+        /* Icon Switcher Panel for Mixing Dimensions */
+        .icon-switcher-panel { display: flex; gap: 8px; align-items: center; margin-bottom: 15px; }
+        .icon-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: var(--white); border: 1px solid var(--slate-100); border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; color: var(--slate-800); box-shadow: var(--shadow); }
+        .icon-btn.active { background: #e0e7ff; border-color: var(--primary); color: var(--primary); }
+
+        /* Chart Layout Grids */
+        .chart-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .chart-box { background: var(--white); padding: 15px; border-radius: 16px; box-shadow: var(--shadow); height: 260px; }
+
+        /* Tables Grid Style Standard */
+        .table-section { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 20px; }
+        .table-section h3 { margin: 0 0 15px 0; font-size: 15px; font-weight: 700; color: #0f172a; }
+        table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+        th, td { border: 1px solid var(--slate-100); padding: 10px; text-align: center; }
+        th { background: var(--slate-50); color: var(--slate-800); font-weight: 700; font-size: 10px; text-transform: uppercase; }
+        .row-label { text-align: left; font-weight: 700; background: #fff; position: sticky; left: 0; min-width: 150px; }
+        .row-label-wide { min-width: 290px; }
+        
+        /* Alerts conditional formats */
+        .alert-good { background: #ecfdf5; color: var(--success); font-weight: 700; }
+        .alert-risk { background: #fffbeb; color: var(--warning); font-weight: 700; }
+        .alert-bad { background: #fff1f2; color: var(--danger); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="dashboard-header">
+        <h1>Báo cáo Marketing</h1>
+    </div>
+
+    <!-- Hệ thống chuyển trang Multi-page -->
+    <div class="page-nav">
+        <div class="page-btn active" onclick="switchPage(event, 'page-overview')">Tổng quan</div>
+        <div class="page-btn" onclick="switchPage(event, 'page-ecommerce')">Thương mại điện tử</div>
+        <div class="page-btn" onclick="switchPage(event, 'page-channel')">Kênh quảng cáo</div>
+    </div>
+
+    <!-- BỘ LỌC FILTER TOÀN TRANG -->
+    <div class="filter-panel">
+        <div class="filter-group">
+            <label>Thời gian</label>
+            <select><option>Tháng này (T10)</option><option>Tháng trước</option></select>
+        </div>
+        <div class="filter-group">
+            <label>Nhân sự</label>
+            <div class="sub-filters">
+                <select><option>Agent</option></select>
+                <select><option>SubBu</option></select>
+                <select><option>Thị trường</option></select>
+            </div>
+        </div>
+        <div class="filter-group">
+            <label>Sản phẩm</label>
+            <div class="sub-filters">
+                <select><option>SKU</option></select>
+                <select><option>SubBrand</option></select>
+                <select><option>Brand</option></select>
+            </div>
+        </div>
+        <div class="filter-group">
+            <label>Nền tảng</label>
+            <div class="sub-filters" style="grid-template-columns: 1fr 1fr;">
+                <select><option>Kênh bán</option></select>
+                <select><option>Kênh QC</option></select>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PAGE 1: TỔNG QUAN (GIỮ NGUYÊN BẢN CŨ CỦA BẠN) ================= -->
+    <div id="page-overview" class="page-content active">
+        <div class="kpi-row">
+            <div class="kpi-card"><div class="kpi-label">Doanh số</div><div class="kpi-value">2,450M</div><small class="alert-good" style="background:none;">▲ 12% vs KPIs</small></div>
+            <div class="kpi-card"><div class="kpi-label">Đơn hàng</div><div class="kpi-value">6,120</div><small class="alert-good" style="background:none;">▲ 4% vs KPIs</small></div>
+            <div class="kpi-card"><div class="kpi-label">CPO (Chi phí/Đơn)</div><div class="kpi-value">54,000 đ</div><small class="alert-good" style="background:none;">▼ 5% Tối ưu</small></div>
+            <div class="kpi-card"><div class="kpi-label">% MKT (Chi phí/Doanh số)</div><div class="kpi-value">14.5%</div><small class="alert-bad" style="background:none;">▲ 0.5% Vượt trần</small></div>
+        </div>
+
+        <div class="chart-grid-3">
+            <div class="chart-box"><canvas id="ovChartTrendRev"></canvas></div>
+            <div class="chart-box"><canvas id="ovChartMixBudgetMkt"></canvas></div>
+            <div class="chart-box"><canvas id="ovChartMixOrdersCpo"></canvas></div>
+        </div>
+
+        <div class="chart-grid-3">
+            <div class="chart-box"><canvas id="ovChartTopStaff"></canvas></div>
+            <div class="chart-box"><canvas id="ovChartTopSku"></canvas></div>
+            <div class="chart-box"><canvas id="ovChartPieShare"></canvas></div>
+        </div>
+
+        <div class="table-section">
+            <div class="icon-switcher-panel">
+                <span style="font-size:12px; font-weight:700; color:var(--slate-400); margin-right:8px;">Mix Dimension:</span>
+                <button class="icon-btn active">■ Ngày</button>
+                <button class="icon-btn">■ Tuần</button>
+                <button class="icon-btn">■ Tháng</button>
+                <button class="icon-btn">■ Marketer</button>
+                <button class="icon-btn">■ SKU</button>
+                <button class="icon-btn">■ SubBrand</button>
+                <button class="icon-btn">■ Kênh quảng cáo</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="row-label">Thời gian/Phân rã</th>
+                            <th>Doanh số</th><th>Ngân sách</th><th>ROAS</th><th>Đơn hàng</th><th>CPO</th><th>AOV</th><th>Lead</th><th>Tỷ lệ CĐ</th><th>Tỷ lệ hủy</th><th>%MKT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="row-label">28/05/2026</td><td>85M</td><td>12M</td><td>7.1</td><td>210</td><td>57k</td><td>404k</td><td>840</td><td>25%</td><td>2.1%</td><td>14.1%</td></tr>
+                        <tr><td class="row-label">27/05/2026</td><td>92M</td><td>13M</td><td>7.0</td><td>230</td><td>56k</td><td>400k</td><td>910</td><td>26%</td><td>1.8%</td><td>14.1%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PAGE 2: THƯƠNG MẠI ĐIỆN TỬ (CHỈ SỬA TRỤC HÀNG THEO YÊU CẦU) ================= -->
+    <div id="page-ecommerce" class="page-content">
+        <div class="bookmark-row">
+            <div class="bookmark-item active" onclick="switchBookmark(this)">Tiktok</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">Amazon</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">Shopee</div>
+        </div>
+
+        <div class="table-section">
+            <h3>Chi tiết các chỉ số Thương mại điện tử</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="row-label row-label-wide">Các chỉ số (Hàng)</th>
+                            <th>Tháng</th><th>Số thực hiện</th><th>Cảnh báo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ecommerceTableBody">
+                        <!-- Javascript auto populates the 21 unique rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PAGE 3: KÊNH QUẢNG CÁO (GIỮ NGUYÊN BẢN CŨ CỦA BẠN) ================= -->
+    <div id="page-channel" class="page-content">
+        <div class="bookmark-row">
+            <div class="bookmark-item active" onclick="switchBookmark(this)">FB</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">GG</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">Titktok</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">Shopee</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">Amazon</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">Walmart</div>
+        </div>
+
+        <div class="table-section">
+            <h3>Báo cáo chi tiết các chỉ số Kênh Quảng cáo</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="row-label">Ngày</th>
+                            <th>Imp</th><th>Reach</th><th>Clicks</th><th>Lead</th><th>Đơn hàng</th>
+                            <th>CPM</th><th>CPC</th><th>CPL</th><th>CPO</th><th>CTR</th><th>CR</th>
+                            <th>Doanh số</th><th>Ngân sách</th><th>ROAS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="row-label">28/05/2026</td>
+                            <td>120k</td><td>85k</td><td>4,200</td><td>340</td><td>85</td>
+                            <td>85k</td><td>2.4k</td><td>30k</td><td>120k</td><td>3.5%</td><td>2.0%</td>
+                            <td>45M</td><td>10.2M</td><td>4.4</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchPage(evt, pageId) {
+        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+        evt.currentTarget.classList.add('active');
+    }
+
+    function switchBookmark(element) {
+        element.parentElement.querySelectorAll('.bookmark-item').forEach(i => i.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    // Danh sách 21 chỉ số của trang TMĐT gán vào trục Hàng theo đúng thứ tự yêu cầu
+    const ecommerceRows = [
+        "Tỷ lệ giao nhanh 24h",
+        "Tỷ lệ gửi hàng nhanh",
+        "Tỷ lệ gửi hàng muộn",
+        "Tỷ lệ hủy do lỗi của người bán",
+        "Tỷ lệ gửi hàng muộn đơn Hỏa tốc",
+        "Tỷ lệ gửi hàng muộn đơn Trong ngày",
+        "Tỷ lệ đánh giá tiêu cực liên quan đến người bán",
+        "Tỷ lệ đánh giá tiêu cực liên quan đến dịch vụ",
+        "Tỷ lệ hoàn tiền và trả hàng do lỗi người bán",
+        "Tỷ lệ trả lời trong 12 giờ",
+        "Thời gian phản hồi trung bình",
+        "Tỷ lệ hài lòng qua chat",
+        "Vi phạm kiểm soát rủi ro",
+        "Tỷ lệ đơn hàng không thành công",
+        "Tỷ lệ giao hàng trễ",
+        "Thời gian chuẩn bị hàng",
+        "Sản phẩm bị khóa/xóa",
+        "Hàng đặt trước",
+        "Các vi phạm khác",
+        "Tỉ lệ phản hồi",
+        "Đánh giá Shop"
+    ];
+
+    // Tạo giả lập cảnh báo ngẫu nhiên để test demo trực quan
+    const ecomTableBody = document.getElementById('ecommerceTableBody');
+    ecommerceRows.forEach((metric, index) => {
+        let alertClass = "alert-good";
+        let alertText = "Tốt";
+        
+        if (index % 5 === 1) { alertClass = "alert-risk"; alertText = "Rủi ro"; }
+        else if (index % 5 === 3) { alertClass = "alert-bad"; alertText = "Xấu"; }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="row-label row-label-wide">${metric}</td>
+            <td>Tháng 10</td>
+            <td>${index % 2 === 0 ? "94.5%" : "1.2%"}</td>
+            <td class="${alertClass}">${alertText}</td>
+        `;
+        ecomTableBody.appendChild(tr);
+    });
+
+    // --- Cấu hình 6 biểu đồ trang Tổng quan (Giữ nguyên) ---
+    const baseOptions = (title) => ({
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top', labels: { usePointStyle: true, font: { size: 10 } } },
+            title: { display: true, text: title, font: { size: 13, weight: '700' }, align: 'start' }
+        },
+        scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            y: { grid: { display: false }, border: { display: false }, ticks: { display: false } }
+        }
+    });
+
+    const timelineLabels = ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'];
+
+    new Chart(document.getElementById('ovChartTrendRev'), {
+        type: 'line',
+        data: { labels: timelineLabels, datasets: [{ label: 'Doanh số Thực tế', data: [520, 580, 610, 740], borderColor: '#4f46e5', tension: 0.4 }, { label: 'KPIs Mục tiêu', data: [550, 550, 550, 550], borderColor: '#cbd5e1', borderDash: [5, 5] }] },
+        options: baseOptions('Trend Doanh số Thực hiện vs KPIs (M)')
+    });
+
+    new Chart(document.getElementById('ovChartMixBudgetMkt'), {
+        type: 'bar',
+        data: { labels: timelineLabels, datasets: [{ type: 'bar', label: 'Ngân sách Ads', data: [75, 82, 80, 95], backgroundColor: '#94a3b8' }, { type: 'line', label: '% MKT Thực tế', data: [14.4, 14.1, 13.1, 12.8], borderColor: '#f59e0b', tension: 0.4, yAxisID: 'y1' }] },
+        options: { ...baseOptions('Ngân sách & Tỷ lệ %MKT'), scales: { y1: { position: 'right', grid: { display: false } } } }
+    });
+
+    new Chart(document.getElementById('ovChartMixOrdersCpo'), {
+        type: 'bar',
+        data: { labels: timelineLabels, datasets: [{ type: 'bar', label: 'Số lượng đơn hàng', data: [1300, 1500, 1420, 1900], backgroundColor: '#4f46e5' }, { type: 'line', label: 'CPO Thực tế', data: [57, 54, 56, 50], borderColor: '#10b981', tension: 0.4, yAxisID: 'y1' }] },
+        options: { ...baseOptions('Volume Đơn hàng & Hiệu suất CPO'), scales: { y1: { position: 'right', grid: { display: false } } } }
+    });
+
+    new Chart(document.getElementById('ovChartTopStaff'), { type: 'bar', data: { labels: ['Marketer A', 'Marketer B', 'Marketer C'], datasets: [{ data: [450, 390, 320], backgroundColor: '#4f46e5' }] }, options: { ...baseOptions('Top Nhân sự Doanh số (M)'), indexAxis: 'y' } });
+    new Chart(document.getElementById('ovChartTopSku'), { type: 'bar', data: { labels: ['SKU-Lumi-01', 'SKU-Abera-05'], datasets: [{ data: [210, 185], backgroundColor: '#10b981' }] }, options: { ...baseOptions('Top SKU Doanh số cao (M)'), indexAxis: 'y' } });
+    new Chart(document.getElementById('ovChartPieShare'), { type: 'doughnut', data: { labels: ['Facebook Ads', 'Google Ads', 'TikTok Ads'], datasets: [{ data: [55, 25, 20], backgroundColor: ['#4f46e5', '#06b6d4', '#f59e0b'] }] }, options: baseOptions('Tỷ trọng Doanh số theo Kênh QC') });
+
+    document.querySelectorAll('.icon-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.parentElement.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>
