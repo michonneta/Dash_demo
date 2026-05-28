@@ -1,0 +1,356 @@
+HTML
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Marketing | HV Holdings BI</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5; --success: #10b981; --danger: #f43f5e; --warning: #f59e0b; --info: #06b6d4;
+            --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-400: #94a3b8; --slate-800: #1e293b;
+            --white: #ffffff; --shadow: 0 4px 20px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f4f7fa; color: var(--slate-800); margin: 0; padding: 20px; }
+        .container { max-width: 1750px; margin: 0 auto; }
+
+        /* Title Area */
+        .dashboard-header { margin-bottom: 20px; border-bottom: 2px solid var(--slate-100); padding-bottom: 12px; }
+        .dashboard-header h1 { font-size: 28px; font-weight: 800; margin: 0; color: #0f172a; letter-spacing: -0.5px; }
+
+        /* Navigation Pages Tabs */
+        .page-nav { display: flex; gap: 10px; margin-bottom: 20px; }
+        .page-btn { padding: 12px 24px; cursor: pointer; border-radius: 10px; font-weight: 700; background: var(--white); border: 1px solid var(--slate-100); color: var(--slate-400); transition: 0.3s; font-size: 13px; }
+        .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Dynamic Tab Content */
+        .page-content { display: none; }
+        .page-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Global Filter Panel */
+        .filter-panel { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; 
+            background: var(--white); padding: 18px; border-radius: 16px; 
+            box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid var(--slate-100);
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 4px; }
+        .filter-group label { font-size: 10px; font-weight: 700; color: var(--slate-400); text-transform: uppercase; letter-spacing: 0.5px; }
+        .sub-filters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .filter-panel select { width: 100%; border: 1px solid var(--slate-100); background: var(--slate-50); padding: 6px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+
+        /* Row 1: Highlight KPIs */
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .kpi-card { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: var(--shadow); border: 1px solid #fff; }
+        .kpi-label { color: var(--slate-400); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .kpi-value { font-size: 24px; font-weight: 800; margin: 5px 0; color: #0f172a; }
+        
+        /* Bookmark Layout Filters */
+        .bookmark-row { display: flex; gap: 8px; margin-bottom: 15px; background: #e2e8f0; padding: 6px; border-radius: 8px; width: fit-content; }
+        .bookmark-item { padding: 6px 16px; font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 6px; color: var(--slate-800); transition: 0.2s; }
+        .bookmark-item.active { background: var(--white); box-shadow: var(--shadow); color: var(--primary); }
+
+        /* Icon Switcher Panel for Mixing Dimensions */
+        .icon-switcher-panel { display: flex; gap: 8px; align-items: center; margin-bottom: 15px; }
+        .icon-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: var(--white); border: 1px solid var(--slate-100); border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; color: var(--slate-800); box-shadow: var(--shadow); }
+        .icon-btn.active { background: var(--primary-light, #e0e7ff); border-color: var(--primary); color: var(--primary); }
+
+        /* Chart Layout Grids */
+        .chart-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .chart-box { background: var(--white); padding: 15px; border-radius: 16px; box-shadow: var(--shadow); height: 260px; }
+
+        /* Tables Grid Style Standard */
+        .table-section { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 20px; }
+        .table-section h3 { margin: 0 0 15px 0; font-size: 15px; font-weight: 700; color: #0f172a; }
+        table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+        th, td { border: 1px solid var(--slate-100); padding: 10px; text-align: center; }
+        th { background: var(--slate-50); color: var(--slate-800); font-weight: 700; font-size: 10px; text-transform: uppercase; }
+        .row-label { text-align: left; font-weight: 700; background: #fff; position: sticky; left: 0; min-width: 120px; }
+        
+        /* Alerts conditional formats */
+        .alert-good { background: #ecfdf5; color: var(--success); font-weight: 700; }
+        .alert-risk { background: #fffbeb; color: var(--warning); font-weight: 700; }
+        .alert-bad { background: #fff1f2; color: var(--danger); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Tên Báo cáo -->
+    <div class="dashboard-header">
+        <h1>Báo cáo Marketing</h1>
+    </div>
+
+    <!-- Hệ thống chuyển trang Multi-page -->
+    <div class="page-nav">
+        <div class="page-btn active" onclick="switchPage(event, 'page-overview')">Tổng quan</div>
+        <div class="page-btn" onclick="switchPage(event, 'page-ecommerce')">Thương mại điện tử</div>
+        <div class="page-btn" onclick="switchPage(event, 'page-channel')">Kênh quảng cáo</div>
+    </div>
+
+    <!-- BỘ LỌC FILTER TOÀN TRANG (Giữ nguyên cho tất cả các trang) -->
+    <div class="filter-panel">
+        <div class="filter-group">
+            <label>Thời gian</label>
+            <select><option>Tháng này (T10)</option><option>Tháng trước</option></select>
+        </div>
+        <div class="filter-group">
+            <label>Nhân sự</label>
+            <div class="sub-filters">
+                <select><option>Agent</option></select>
+                <select><option>SubBu</option></select>
+                <select><option>Thị trường</option></select>
+            </div>
+        </div>
+        <div class="filter-group">
+            <label>Sản phẩm</label>
+            <div class="sub-filters">
+                <select><option>SKU</option></select>
+                <select><option>SubBrand</option></select>
+                <select><option>Brand</option></select>
+            </div>
+        </div>
+        <div class="filter-group">
+            <label>Nền tảng</label>
+            <div class="sub-filters" style="grid-template-columns: 1fr 1fr;">
+                <select><option>Kênh bán</option></select>
+                <select><option>Kênh QC</option></select>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PAGE 1: TỔNG QUAN ================= -->
+    <div id="page-overview" class="page-content active">
+        <!-- Hàng 1: Highlight KPIs -->
+        <div class="kpi-row">
+            <div class="kpi-card"><div class="kpi-label">Doanh số</div><div class="kpi-value">2,450M</div><small class="alert-good" style="background:none;">▲ 12% vs KPIs</small></div>
+            <div class="kpi-card"><div class="kpi-label">Đơn hàng</div><div class="kpi-value">6,120</div><small class="alert-good" style="background:none;">▲ 4% vs KPIs</small></div>
+            <div class="kpi-card"><div class="kpi-label">CPO (Chi phí/Đơn)</div><div class="kpi-value">54,000 đ</div><small class="alert-good" style="background:none;">▼ 5% Tối ưu</small></div>
+            <div class="kpi-card"><div class="kpi-label">% MKT (Chi phí/Doanh số)</div><div class="kpi-value">14.5%</div><small class="alert-bad" style="background:none;">▲ 0.5% Vượt trần</small></div>
+        </div>
+
+        <!-- Hàng 2: Biểu đồ Trend & Mix -->
+        <div class="chart-grid-3">
+            <div class="chart-box"><canvas id="ovChartTrendRev"></canvas></div>
+            <div class="chart-box"><canvas id="ovChartMixBudgetMkt"></canvas></div>
+            <div class="chart-box"><canvas id="ovChartMixOrdersCpo"></canvas></div>
+        </div>
+
+        <!-- Hàng 3: Biểu đồ Phân bổ & Thứ hạng -->
+        <div class="chart-grid-3">
+            <div class="chart-box"><canvas id="ovChartTopStaff"></canvas></div>
+            <div class="chart-box"><canvas id="ovChartTopSku"></canvas></div>
+            <div class="chart-box"><canvas id="ovChartPieShare"></canvas></div>
+        </div>
+
+        <!-- Hàng 4: Bảng tổng hợp Mix-Dimension -->
+        <div class="table-section">
+            <div class="icon-switcher-panel">
+                <span style="font-size:12px; font-weight:700; color:var(--slate-400); margin-right:8px;">Mix Dimension:</span>
+                <button class="icon-btn active">■ Ngày</button>
+                <button class="icon-btn">■ Tuần</button>
+                <button class="icon-btn">■ Tháng</button>
+                <button class="icon-btn">■ Marketer</button>
+                <button class="icon-btn">■ SKU</button>
+                <button class="icon-btn">■ SubBrand</button>
+                <button class="icon-btn">■ Kênh quảng cáo</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="row-label">Thời gian/Phân rã</th>
+                            <th>Doanh số</th><th>Ngân sách</th><th>ROAS</th><th>Đơn hàng</th><th>CPO</th><th>AOV</th><th>Lead</th><th>Tỷ lệ CĐ</th><th>Tỷ lệ hủy</th><th>%MKT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="row-label">28/05/2026</td><td>85M</td><td>12M</td><td>7.1</td><td>210</td><td>57k</td><td>404k</td><td>840</td><td>25%</td><td>2.1%</td><td>14.1%</td></tr>
+                        <tr><td class="row-label">27/05/2026</td><td>92M</td><td>13M</td><td>7.0</td><td>230</td><td>56k</td><td>400k</td><td>910</td><td>26%</td><td>1.8%</td><td>14.1%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PAGE 2: THƯƠNG MẠI ĐIỆN TỬ ================= -->
+    <div id="page-ecommerce" class="page-content">
+        <!-- Bộ lọc Bookmark -->
+        <div class="bookmark-row">
+            <div class="bookmark-item active" onclick="switchBookmark(this)">TikTok Shop</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">Amazon</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">Shopee</div>
+        </div>
+
+        <!-- Bảng chi tiết Ma trận chỉ số -->
+        <div class="table-section">
+            <h3>Chi tiết Hiệu suất Kênh TMĐT</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="row-label">Chỉ số kinh doanh</th>
+                        <th>Tháng 03</th><th>Tháng 04</th><th>Tháng 05</th><th>Số thực hiện (YTD)</th><th>Cảnh báo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="row-label">Doanh số</td><td>450M</td><td>510M</td><td>580M</td><td>1,540M</td><td class="alert-good">Tốt</td></tr>
+                    <tr><td class="row-label">Ngân sách Ads</td><td>72M</td><td>85M</td><td>92M</td><td>249M</td><td class="alert-risk">Rủi ro (Vượt hạn mức)</td></tr>
+                    <tr><td class="row-label">Đơn hàng</td><td>1,120</td><td>1,300</td><td>1,450</td><td>3,870</td><td class="alert-good">Tốt</td></tr>
+                    <tr><td class="row-label">ROAS Kênh</td><td>6.2</td><td>6.0</td><td>6.3</td><td>6.1</td><td class="alert-good">Tốt</td></tr>
+                    <tr><td class="row-label">Tỷ lệ hủy đơn</td><td>4.2%</td><td>5.1%</td><td>5.8%</td><td>5.0%</td><td class="alert-bad">Xấu</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= PAGE 3: KÊNH QUẢNG CÁO ================= -->
+    <div id="page-channel" class="page-content">
+        <!-- Bộ lọc Bookmark đa nền tảng -->
+        <div class="bookmark-row">
+            <div class="bookmark-item active" onclick="switchBookmark(this)">Facebook Ads</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">Google Ads</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">TikTok Ads</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">Shopee Ads</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">Amazon Ads</div>
+            <div class="bookmark-item" onclick="switchBookmark(this)">Walmart Ads</div>
+        </div>
+
+        <!-- Bảng chi tiết toàn diện chiều ngang -->
+        <div class="table-section">
+            <h3>Báo cáo thuộc tính Kênh Chiến dịch (Daily Data)</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="row-label">Ngày</th>
+                            <th>Imp</th><th>Reach</th><th>Clicks</th><th>Lead</th><th>Đơn hàng</th>
+                            <th>CPM</th><th>CPC</th><th>CPL</th><th>CPO</th><th>CTR</th><th>CR</th>
+                            <th>Doanh số</th><th>Ngân sách</th><th>ROAS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="row-label">28/05/2026</td>
+                            <td>120k</td><td>85k</td><td>4,200</td><td>340</td><td>85</td>
+                            <td>85k</td><td>2.4k</td><td>30k</td><td>120k</td><td>3.5%</td><td>2.0%</td>
+                            <td>45M</td><td>10.2M</td><td>4.4</td>
+                        </tr>
+                        <tr>
+                            <td class="row-label">27/05/2026</td>
+                            <td>115k</td><td>80k</td><td>3,900</td><td>310</td><td>78</td>
+                            <td>86k</td><td>2.5k</td><td>32k</td><td>128k</td><td>3.3%</td><td>2.0%</td>
+                            <td>41M</td><td>10.0M</td><td>4.1</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Hàm chuyển đổi Trang (Tabs)
+    function switchPage(evt, pageId) {
+        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+        evt.currentTarget.classList.add('active');
+    }
+
+    // Hàm chuyển đổi Bookmark bộ lọc nhanh
+    function switchBookmark(element) {
+        let parent = element.parentElement;
+        parent.querySelectorAll('.bookmark-item').forEach(i => i.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    // Biến cấu hình biểu đồ chuẩn không có lưới ngang dọc (No Grid Lines)
+    const baseOptions = (title) => ({
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top', labels: { usePointStyle: true, font: { size: 10, weight: '600' } } },
+            title: { display: true, text: title, font: { size: 13, weight: '700' }, align: 'start' }
+        },
+        scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            y: { grid: { display: false }, border: { display: false }, ticks: { display: false } }
+        }
+    });
+
+    const timelineLabels = ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'];
+
+    // --- RENDER 6 BIỂU ĐỒ TRANG TỔNG QUAN ---
+    
+    // 1. Trend: Doanh số thực hiện vs KPIs
+    new Chart(document.getElementById('ovChartTrendRev'), {
+        type: 'line',
+        data: {
+            labels: timelineLabels,
+            datasets: [
+                { label: 'Doanh số Thực tế', data: [520, 580, 610, 740], borderColor: '#4f46e5', tension: 0.4, borderWidth: 3 },
+                { label: 'KPIs Mục tiêu', data: [550, 550, 550, 550], borderColor: '#cbd5e1', borderDash: [5, 5], tension: 0.4, borderWidth: 2 }
+            ]
+        },
+        options: baseOptions('Trend Doanh số Thực hiện vs KPIs (M)')
+    });
+
+    // 2. Mix: Cột Ngân sách, Line %MKT thực hiện & KPIs
+    new Chart(document.getElementById('ovChartMixBudgetMkt'), {
+        type: 'bar',
+        data: {
+            labels: timelineLabels,
+            datasets: [
+                { type: 'bar', label: 'Ngân sách Ads', data: [75, 82, 80, 95], backgroundColor: '#94a3b8', yAxisID: 'y' },
+                { type: 'line', label: '% MKT Thực tế', data: [14.4, 14.1, 13.1, 12.8], borderColor: '#f59e0b', tension: 0.4, yAxisID: 'y1' },
+                { type: 'line', label: '% MKT Target', data: [14.0, 14.0, 14.0, 14.0], borderColor: '#f43f5e', borderDash: [2, 2], tension: 0.4, yAxisID: 'y1' }
+            ]
+        },
+        options: { ...baseOptions('Ngân sách & Tỷ lệ %MKT'), scales: { y: { position: 'left' }, y1: { position: 'right', grid: { display: false } } } }
+    });
+
+    // 3. Mix: Cột số lượng đơn hàng, line CPO
+    new Chart(document.getElementById('ovChartMixOrdersCpo'), {
+        type: 'bar',
+        data: {
+            labels: timelineLabels,
+            datasets: [
+                { type: 'bar', label: 'Số lượng đơn hàng', data: [1300, 1500, 1420, 1900], backgroundColor: '#4f46e5', yAxisID: 'y' },
+                { type: 'line', label: 'CPO Thực tế (k)', data: [57, 54, 56, 50], borderColor: '#10b981', tension: 0.4, yAxisID: 'y1' }
+            ]
+        },
+        options: { ...baseOptions('Volume Đơn hàng & Hiệu suất CPO'), scales: { y: { position: 'left' }, y1: { position: 'right', grid: { display: false } } } }
+    });
+
+    // 4. Top Nhân sự Doanh số (Bar ngang)
+    new Chart(document.getElementById('ovChartTopStaff'), {
+        type: 'bar',
+        data: { labels: ['Marketer A', 'Marketer B', 'Marketer C'], datasets: [{ data: [450, 390, 320], backgroundColor: '#4f46e5', barThickness: 15 }] },
+        options: { ...baseOptions('Top Nhân sự Doanh số (M)'), indexAxis: 'y' }
+    });
+
+    // 5. Top SKU Doanh số cao (Bar ngang)
+    new Chart(document.getElementById('ovChartTopSku'), {
+        type: 'bar',
+        data: { labels: ['SKU-Lumi-01', 'SKU-Abera-05', 'SKU-Serum-A'], datasets: [{ data: [210, 185, 140], backgroundColor: '#10b981', barThickness: 15 }] },
+        options: { ...baseOptions('Top SKU Doanh số cao (M)'), indexAxis: 'y' }
+    });
+
+    // 6. Tròn: Tỷ trọng Doanh số theo Kênh quảng cáo
+    new Chart(document.getElementById('ovChartPieShare'), {
+        type: 'doughnut',
+        data: { labels: ['Facebook Ads', 'Google Ads', 'TikTok Ads', 'Kênh khác'], datasets: [{ data: [55, 25, 15, 5], backgroundColor: ['#4f46e5', '#06b6d4', '#f59e0b', '#cbd5e1'] }] },
+        options: { ...baseOptions('Tỷ trọng Doanh số theo Kênh QC'), scales: {} }
+    });
+
+    // Code xử lý hành vi kích hoạt nút Mix Dimension
+    document.querySelectorAll('.icon-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.parentElement.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>
