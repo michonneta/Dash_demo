@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mẫu Báo Cáo Nhân Sự - HR Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-100 font-sans text-gray-800">
+
+    <div class="container mx-auto p-6">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-blue-800 tracking-wide uppercase">
+                Mẫu Báo Cáo Nhân Sự
+            </h1>
+            <p class="text-gray-500 text-sm mt-1">Hệ thống quản trị và phân tích dữ liệu HR nội bộ</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <div class="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div class="border-b pb-3 mb-4 flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-blue-900 flex items-center gap-2">
+                        <i class="fa-solid fa-users-gear text-blue-600"></i> Báo cáo biến động nhân sự
+                    </h2>
+                    <span class="text-xs bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full font-medium">Tháng này</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-slate-50 p-3 rounded-lg flex flex-col justify-center items-center h-40">
+                        <span class="text-xs text-gray-500 font-medium mb-2">Thống kê số lượng nhân sự</span>
+                        <canvas id="chartBiendong1"></canvas>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg flex flex-col justify-center items-center h-40">
+                        <span class="text-xs text-gray-500 font-medium mb-2">Cơ cấu loại hợp đồng</span>
+                        <div class="w-28 h-28">
+                            <canvas id="chartBiendong2"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto text-xs">
+                    <table class="min-w-full divide-y divide-gray-200 border text-center">
+                        <thead class="bg-blue-50 text-blue-900 font-semibold">
+                            <tr>
+                                <th class="px-2 py-2 border">Phòng ban</th>
+                                <th class="px-2 py-2 border">Tăng</th>
+                                <th class="px-2 py-2 border">Giảm</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            <tr>
+                                <td class="px-2 py-1.5 border font-medium text-left">Phòng Công nghệ</td>
+                                <td class="px-2 py-1.5 border text-green-600 font-bold">+4</td>
+                                <td class="px-2 py-1.5 border text-red-600 font-bold">-1</td>
+                            </tr>
+                            <tr>
+                                <td class="px-2 py-1.5 border text-left font-medium">Phòng Kinh doanh</td>
+                                <td class="px-2 py-1.5 border text-green-600 font-bold">+6</td>
+                                <td class="px-2 py-1.5 border text-red-600 font-bold">-3</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div class="border-b pb-3 mb-4 flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-blue-900 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus text-blue-600"></i> Báo cáo tuyển dụng
+                    </h2>
+                    <span class="text-xs bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full font-medium">Kế hoạch</span>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2 mb-4 text-center">
+                    <div class="bg-blue-50 p-2 rounded border border-blue-100">
+                        <div class="text-lg font-bold text-blue-700">94</div>
+                        <div class="text-[10px] text-gray-500 uppercase font-semibold">Ứng viên</div>
+                    </div>
+                    <div class="bg-purple-50 p-2 rounded border border-purple-100">
+                        <div class="text-lg font-bold text-purple-700">86</div>
+                        <div class="text-[10px] text-gray-500 uppercase font-semibold">Phỏng vấn</div>
+                    </div>
+                    <div class="bg-orange-50 p-2 rounded border border-orange-100">
+                        <div class="text-lg font-bold text-orange-700">72</div>
+                        <div class="text-[10px] text-gray-500 uppercase font-semibold">Trúng tuyển</div>
+                    </div>
+                    <div class="bg-teal-50 p-2 rounded border border-teal-100">
+                        <div class="text-lg font-bold text-teal-700">81.3%</div>
+                        <div class="text-[10px] text-gray-500 uppercase font-semibold">Tỷ lệ đạt</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-3 rounded-lg h-44 flex flex-col justify-center">
+                        <span class="text-xs text-gray-500 font-medium mb-1 text-center">Hiệu quả kênh tuyển dụng</span>
+                        <canvas id="chartTuyendung1"></canvas>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg h-44 flex flex-col justify-center">
+                        <span class="text-xs text-gray-500 font-medium mb-1 text-center">Tiến độ theo vị trí</span>
+                        <canvas id="chartTuyendung2"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div class="border-b pb-3 mb-4 flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-blue-900 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-check text-blue-600"></i> Báo cáo chấm công
+                    </h2>
+                    <span class="text-xs bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-medium">Real-time</span>
+                </div>
+
+                <div class="bg-slate-50 p-3 rounded-lg mb-4 h-44 flex flex-col justify-center">
+                    <span class="text-xs text-gray-500 font-medium mb-2 text-center">Tình hình đi muộn / Về sớm theo phòng ban</span>
+                    <canvas id="chartChamcong1"></canvas>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-3 rounded-lg flex items-center justify-around">
+                        <div class="w-16 h-16">
+                            <canvas id="chartChamcong2"></canvas>
+                        </div>
+                        <div class="text-xs">
+                            <div class="font-semibold text-gray-700">Tỷ lệ đi làm đúng giờ</div>
+                            <div class="text-xl font-bold text-emerald-600">96.4%</div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg flex flex-col justify-center">
+                        <span class="text-[11px] text-gray-500 font-medium mb-1">Top lý do nghỉ phép:</span>
+                        <div class="space-y-1 text-xs">
+                            <div class="flex justify-between"><span>Nghỉ ốm (Có phép):</span> <span class="font-bold">45%</span></div>
+                            <div class="flex justify-between"><span>Việc cá nhân:</span> <span class="font-bold">35%</span></div>
+                            <div class="flex justify-between"><span>Nghỉ thai sản/Khác:</span> <span class="font-bold">20%</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border-2 border-blue-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div class="border-b pb-3 mb-4 flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-blue-900 flex items-center gap-2">
+                        <i class="fa-solid fa-money-bill-wave text-blue-600"></i> Báo cáo tiền lương
+                    </h2>
+                    <span class="text-xs bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-full font-medium">Bảo mật</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    <div class="bg-slate-50 p-3 rounded-lg col-span-1 flex flex-col justify-center h-40">
+                        <span class="text-xs text-gray-500 font-medium text-center mb-1">Phân bổ quỹ lương</span>
+                        <div class="w-full h-full flex justify-center items-center">
+                            <canvas id="chartLuong1"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg col-span-2 flex flex-col justify-center h-40">
+                        <span class="text-xs text-gray-500 font-medium text-center mb-1">Quỹ lương theo phòng ban (Triệu VNĐ)</span>
+                        <canvas id="chartLuong2"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r align-middle from-blue-900 to-indigo-900 text-white rounded-lg p-3 flex justify-between items-center shadow-inner">
+                    <div>
+                        <p class="text-[11px] uppercase tracking-wider text-blue-200 font-semibold">Tổng quỹ lương chi trả tháng này</p>
+                        <p class="text-xl font-bold text-amber-400">1,250,350,000 <span class="text-xs text-white">VND</span></p>
+                    </div>
+                    <i class="fa-solid fa-vault text-2xl text-blue-300 opacity-50"></i>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // 1. Biến động nhân sự - Bar Chart
+        new Chart(document.getElementById('chartBiendong1'), {
+            type: 'bar',
+            data: {
+                labels: ['T1', 'T2', 'T3', 'T4'],
+                datasets: [{ data: [12, 19, 8, 25], backgroundColor: '#22c55e', borderRadius: 4 }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
+        });
+
+        // 1. Biến động nhân sự - Pie Chart
+        new Chart(document.getElementById('chartBiendong2'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Chính thức', 'Thử việc'],
+                datasets: [{ data: [65, 35], backgroundColor: ['#ec4899', '#f43f5e'] }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+
+        // 2. Tuyển dụng - Horizontal Bar Chart
+        new Chart(document.getElementById('chartTuyendung1'), {
+            type: 'bar',
+            data: {
+                labels: ['Facebook', 'LinkedIn', 'Website', 'Referral'],
+                datasets: [{ data: [45, 67, 32, 56], backgroundColor: '#3b82f6', borderRadius: 4 }]
+            },
+            options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false } } } }
+        });
+
+        // 2. Tuyển dụng - Vertical Stacked
+        new Chart(document.getElementById('chartTuyendung2'), {
+            type: 'bar',
+            data: {
+                labels: ['Dev', 'Sales', 'HR', 'Mkt'],
+                datasets: [{ data: [12, 15, 5, 8], backgroundColor: '#60a5fa' }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { display: false } } }
+        });
+
+        // 3. Chấm công - Grouped Bar Chart
+        new Chart(document.getElementById('chartChamcong1'), {
+            type: 'bar',
+            data: {
+                labels: ['P. Tech', 'P. Marketing', 'P. Kinh Doanh'],
+                datasets: [
+                    { label: 'Muộn', data: [5, 12, 18], backgroundColor: '#a855f7' },
+                    { label: 'Sớm', data: [3, 5, 8], backgroundColor: '#fb923c' }
+                ]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } }, scales: { y: { display: false } } }
+        });
+
+        // 3. Chấm công - Mini Donut
+        new Chart(document.getElementById('chartChamcong2'), {
+            type: 'doughnut',
+            data: {
+                datasets: [{ data: [96.4, 3.6], backgroundColor: ['#10b981', '#e2e8f0'] }]
+            },
+            options: { cutout: '75%', responsive: true, plugins: { legend: { display: false } } }
+        });
+
+        // 4. Tiền lương - Donut Chart
+        new Chart(document.getElementById('chartLuong1'), {
+            type: 'pie',
+            data: {
+                labels: ['Lương cứng', 'KPI', 'Phụ cấp'],
+                datasets: [{ data: [70, 20, 10], backgroundColor: ['#ef4444', '#3b82f6', '#f59e0b'] }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+
+        // 4. Tiền lương - Horizontal Bar Chart
+        new Chart(document.getElementById('chartLuong2'), {
+            type: 'bar',
+            data: {
+                labels: ['Tech', 'Sales', 'Marketing', 'Backoffice'],
+                datasets: [{ data: [450, 380, 220, 180], backgroundColor: '#f87171', borderRadius: 4 }]
+            },
+            options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } }
+        });
+    </script>
+</body>
+</html>
