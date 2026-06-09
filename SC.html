@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Quản lý hiệu suất Cung ứng</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #18bc9c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-muted: #7f8c8d;
+            --border-color: #e2e8f0;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --success-color: #2ecc71;
+            --info-color: #3498db;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+
+        header {
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 28px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* Tabs Interface */
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .tab-btn {
+            background-color: #e2e8f0;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--primary-color);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background-color: #cbd5e1;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Bộ lọc / Filter Bar */
+        .filter-panel {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .filter-group select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: #fff;
+            min-width: 150px;
+            font-size: 14px;
+            color: var(--text-color);
+            outline: none;
+        }
+
+        /* Layout & KPI Components */
+        .section-title {
+            font-size: 18px;
+            color: var(--primary-color);
+            margin: 20px 0 10px 0;
+            position: relative;
+            padding-left: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 4px;
+            height: 18px;
+            width: 4px;
+            background-color: var(--secondary-color);
+            border-radius: 2px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .kpi-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color);
+        }
+
+        .kpi-card .kpi-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .kpi-card .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .kpi-card .kpi-subtext {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        /* Biểu đồ / Charts Layout */
+        .chart-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .chart-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            min-height: 320px;
+        }
+
+        /* Data Tables */
+        .table-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .table-responsive {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            margin-bottom: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--primary-color);
+            padding: 12px 16px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Badges & Progress */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success { background-color: #dcfce7; color: #15803d; }
+        .badge-warning { background-color: #fef9c3; color: #a16207; }
+        .badge-danger { background-color: #fee2e2; color: #991b1b; }
+        .badge-info { background-color: #e0f2fe; color: #0369a1; }
+
+        .progress-bar-container {
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            height: 8px;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Quản lý hiệu suất Cung ứng</h1>
+        <p>Hệ thống báo cáo chỉ số Logistics & Chuỗi cung ứng thời gian thực</p>
+    </header>
+
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="openTab(event, 'ton-kho')">TỒN KHO</button>
+        <button class="tab-btn" onclick="openTab(event, 'mua-hang')">Báo cáo Mua hàng & Chi phí</button>
+        <button class="tab-btn" onclick="openTab(event, 'nha-cung-cap')">Đánh giá Nhà cung cấp</button>
+        <button class="tab-btn" onclick="openTab(event, 'van-chuyen')">Tiến độ Vận chuyển</button>
+        <button class="tab-btn" onclick="openTab(event, 'du-bao')">Báo cáo Dự báo Nhu cầu</button>
+    </div>
+
+    <div id="ton-kho" class="tab-content active">
+        <div class="filter-panel">
+            <div class="filter-group">
+                <label>Theo sản phẩm</label>
+                <select>
+                    <option>-- Tất cả sản phẩm --</option>
+                    <option>Brand (Thương hiệu)</option>
+                    <option>SubBrand (Nhãn phụ)</option>
+                    <option>SKU (Mã hàng)</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Theo tốc độ bán</label>
+                <select>
+                    <option>-- Tất cả tốc độ --</option>
+                    <option>Bán tốt</option>
+                    <option>Bán trung bình</option>
+                    <option>Bán chậm</option>
+                    <option>Không bán được</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Theo Kho</label>
+                <select>
+                    <option>-- Tất cả Kho --</option>
+                    <option>VN</option>
+                    <option>AMZ</option>
+                    <option>SHIPHUB</option>
+                    <option>CAM</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-title">Chỉ số KPI Tồn kho (Hàng 1)</div>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Tồn kho hiện tại</div>
+                <div class="kpi-value">45,210</div>
+                <div class="kpi-subtext" style="color: var(--text-muted)">Đơn vị sản phẩm</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Giá trị tồn kho</div>
+                <div class="kpi-value">1.25 Tỷ ₫</div>
+                <div class="kpi-subtext" style="color: var(--success-color)">● Ổn định</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Inventory Days</div>
+                <div class="kpi-value">18 Ngày</div>
+                <div class="kpi-subtext" style="color: var(--success-color)">Mục tiêu: &lt; 22 ngày</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Inventory Turnover</div>
+                <div class="kpi-value">5.2x</div>
+                <div class="kpi-subtext" style="color: var(--warning-color)">▲ Tăng nhẹ so với tháng trước</div>
+            </div>
+        </div>
+
+        <div class="chart-grid-2">
+            <div class="chart-card">
+                <div class="kpi-label" style="margin-bottom:15px;">Biểu đồ Giá trị tồn theo Kho</div>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="chartKho"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="kpi-label" style="margin-bottom:15px;">Biểu đồ Giá trị tồn theo Tốc độ bán</div>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="chartTocDo"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-grid-2">
+            <div>
+                <div class="kpi-label" style="margin-bottom:10px;">Bảng Phân loại Theo tốc độ bán (Bên trái)</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Theo tốc độ bán</th>
+                                <th>Số lượng SKU</th>
+                                <th>Giá trị tồn</th>
+                                <th>% tỷ trọng</th>
+                                <th>Hành động đề xuất</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge badge-success">Bán tốt</span></td>
+                                <td>450</td>
+                                <td>650,000,000 ₫</td>
+                                <td>52%</td>
+                                <td>Duy trì kế hoạch nhập đều đặn</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-info">Bán trung bình</span></td>
+                                <td>320</td>
+                                <td>350,000,000 ₫</td>
+                                <td>28%</td>
+                                <td>Theo dõi biến động thị trường</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-warning">Bán chậm</span></td>
+                                <td>95</td>
+                                <td>180,000,000 ₫</td>
+                                <td>14%</td>
+                                <td>Chạy chương trình kích cầu, giảm giá</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-danger">Không bán được</span></td>
+                                <td>42</td>
+                                <td>70,000,000 ₫</td>
+                                <td>6%</td>
+                                <td>Thanh lý thu hồi vốn, xả kho kho gấp</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div>
+                <div class="kpi-label" style="margin-bottom:10px;">Bảng Xuất nhập tồn (Bên phải)</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Xuất</th>
+                                <th>Nhập</th>
+                                <th>Tồn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>SKU-NVL-001</td>
+                                <td>1,200</td>
+                                <td>1,500</td>
+                                <td>300</td>
+                            </tr>
+                            <tr>
+                                <td>SKU-BB-042</td>
+                                <td>3,400</td>
+                                <td>4,000</td>
+                                <td>600</td>
+                            </tr>
+                            <tr>
+                                <td>SKU-LK-109</td>
+                                <td>450</td>
+                                <td>500</td>
+                                <td>50</td>
+                            </tr>
+                            <tr>
+                                <td>SKU-TGD-202</td>
+                                <td>800</td>
+                                <td>1,000</td>
+                                <td>200</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mua-hang" class="tab-content">
+        <div class="filter-panel">
+            <div class="filter-group">
+                <label>Theo Thời gian</label>
+                <select>
+                    <option>Tuần</option>
+                    <option selected>Tháng</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Theo Nhà cung cấp</label>
+                <select>
+                    <option>-- Chọn NCC --</option>
+                    <option>An Hòa</option>
+                    <option>Thịnh Phát</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Theo Danh mục</label>
+                <select>
+                    <option>-- Tất cả danh mục --</option>
+                    <option>Nguyên vật liệu</option>
+                    <option>Bao bì</option>
+                    <option>Linh kiện</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-title">Chỉ số Highlights (Hàng 1)</div>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Giá trị mua hàng</div>
+                <div class="kpi-value">3.45 Tỷ ₫</div>
+                <div class="kpi-subtext" style="color: var(--text-muted)">Tổng phát sinh trong kỳ</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Chi phí mua hàng</div>
+                <div class="kpi-value">185,000,000 ₫</div>
+                <div class="kpi-subtext" style="color: var(--text-muted)">Vận chuyển, thông quan...</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Công nợ</div>
+                <div class="kpi-value" style="color: var(--danger-color);">640,000,000 ₫</div>
+                <div class="kpi-subtext">Cần thanh toán đúng hạn</div>
+            </div>
+        </div>
+
+        <div class="section-title">Bảng Thống kê chi tiết mua hàng (Hàng 2)</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nhà cung cấp</th>
+                        <th>Danh mục</th>
+                        <th>Mã SKU</th>
+                        <th>Số lượng mua</th>
+                        <th>Tổng chi phí</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Thịnh Phát (Công ty TNHH)</td>
+                        <td>Nguyên vật liệu A</td>
+                        <td>SKU-NVL-001</td>
+                        <td>5,000 kg</td>
+                        <td>550,000,000 ₫</td>
+                    </tr>
+                    <tr>
+                        <td>An Hòa Corp</td>
+                        <td>Linh kiện điện tử</td>
+                        <td>SKU-LK-109</td>
+                        <td>1,500 pcs</td>
+                        <td>1,200,000,000 ₫</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-title">Bảng Chi tiết Nhà cung cấp (Hàng 3)</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nhà cung cấp</th>
+                        <th>Mã đơn</th>
+                        <th>Danh mục</th>
+                        <th>Mã SKU</th>
+                        <th>Số lượng mua</th>
+                        <th>Giá trị mua hàng</th>
+                        <th>Chi phí mua hàng</th>
+                        <th>Tổng chi phí</th>
+                        <th>Công nợ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>An Hòa</td>
+                        <td>PO-2026-001</td>
+                        <td>Linh kiện</td>
+                        <td>SKU-LK-109</td>
+                        <td>1,500 pcs</td>
+                        <td>1,150,000,000 ₫</td>
+                        <td>50,000,000 ₫</td>
+                        <td>1,200,000,000 ₫</td>
+                        <td>400,000,000 ₫</td>
+                    </tr>
+                    <tr>
+                        <td>Thịnh Phát</td>
+                        <td>PO-2026-002</td>
+                        <td>Nguyên vật liệu</td>
+                        <td>SKU-NVL-001</td>
+                        <td>5,000 kg</td>
+                        <td>520,000,000 ₫</td>
+                        <td>30,000,000 ₫</td>
+                        <td>550,000,000 ₫</td>
+                        <td>240,000,000 ₫</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="nha-cung-cap" class="tab-content">
+        <div class="section-title">KPI Hiệu suất Nhà cung cấp (Trung bình)</div>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">On-time Delivery (Đúng hạn)</div>
+                <div class="kpi-value">94.2%</div>
+                <div class="progress-bar-container"><div class="progress-bar" style="width: 94.2%; background-color: var(--success-color);"></div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Lead Time (Thời gian cung ứng)</div>
+                <div class="kpi-value">4.5 Ngày</div>
+                <div class="kpi-subtext" style="color: var(--success-color)">▼ Giảm 0.5 ngày</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Tỷ lệ lỗi (Defect Rate)</div>
+                <div class="kpi-value">0.8%</div>
+                <div class="kpi-subtext" style="color: var(--success-color)">Mục tiêu: &lt; 1.5%</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Tỷ lệ trả hàng</div>
+                <div class="kpi-value">1.1%</div>
+                <div class="kpi-subtext" style="color: var(--warning-color)">▲ Tăng nhẹ</div>
+            </div>
+        </div>
+
+        <div class="section-title">Bảng xếp hạng hiệu suất (Supplier Scorecard)</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên Nhà Cung Cấp</th>
+                        <th>Đúng Hạn</th>
+                        <th>Chất Lượng</th>
+                        <th>Điểm Số Tổng Hợp</th>
+                        <th>Xếp Loại</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Công ty TNHH Thành Phát</td>
+                        <td>96%</td>
+                        <td>99.2%</td>
+                        <td><strong>97.6 / 100</strong></td>
+                        <td><span class="badge badge-success">Hạng A (Xuất sắc)</span></td>
+                    </tr>
+                    <tr>
+                        <td>Công ty CP Xuất Nhập Khẩu An Bình</td>
+                        <td>92%</td>
+                        <td>98.5%</td>
+                        <td><strong>95.2 / 100</strong></td>
+                        <td><span class="badge badge-success">Hạng A (Tốt)</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="van-chuyen" class="tab-content">
+        <div class="filter-panel">
+            <div class="filter-group">
+                <label>Theo Thời gian</label>
+                <select>
+                    <option>Tuần</option>
+                    <option>Tháng</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Theo Đối tác vận chuyển</label>
+                <select>
+                    <option>-- Chọn đối tác --</option>
+                    <option>GHN</option>
+                    <option>GHTK</option>
+                    <option>Viettel</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Theo Hình thức vận chuyển</label>
+                <select>
+                    <option>-- Chọn hình thức --</option>
+                    <option>Tàu hỏa</option>
+                    <option>Tàu biển</option>
+                    <option>Máy bay</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-title">Chỉ số Hiệu suất Vận chuyển (Hàng 1)</div>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Đơn đang giao</div>
+                <div class="kpi-value" style="color: var(--warning-color)">42 Đơn</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Đơn thành công</div>
+                <div class="kpi-value" style="color: var(--success-color)">1,150 Đơn</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Đơn thất bại</div>
+                <div class="kpi-value" style="color: var(--danger-color)">5 Đơn</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">OTIF %</div>
+                <div class="kpi-value">96.8%</div>
+                <div class="progress-bar-container"><div class="progress-bar" style="width: 96.8%; background-color: var(--success-color);"></div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">TB thời gian giao</div>
+                <div class="kpi-value">2.4 Ngày</div>
+            </div>
+        </div>
+
+        <div class="section-title">Bảng Chi tiết Vận Chuyển (Hàng 2)</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã Vận Đơn</th>
+                        <th>Đối Tác</th>
+                        <th>Hình Thức</th>
+                        <th>Nơi Đi</th>
+                        <th>Nơi Đến</th>
+                        <th>Trạng Thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>LOG-2601</td>
+                        <td>GHTK</td>
+                        <td>Máy bay</td>
+                        <td>Kho VN</td>
+                        <td>Hà Nội</td>
+                        <td><span class="badge badge-success">Thành công</span></td>
+                    </tr>
+                    <tr>
+                        <td>LOG-2602</td>
+                        <td>GHN</td>
+                        <td>Tàu biển</td>
+                        <td>Kho SHIPHUB</td>
+                        <td>AMZ US</td>
+                        <td><span class="badge badge-warning">Đang giao</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-title">Thống kê theo Đối tác vận chuyển (Hàng 3)</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Đối tác vận chuyển</th>
+                        <th>Mã đơn</th>
+                        <th>TB thời gian giao</th>
+                        <th>Trạng thái đơn</th>
+                        <th>Công nợ</th>
+                        <th>Chi phí vận chuyển</th>
+                        <th>Khối lượng</th>
+                        <th>Đơn giá</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>GHTK</td>
+                        <td>LOG-2601</td>
+                        <td>1.5 Ngày</td>
+                        <td><span class="badge badge-success">Thành công</span></td>
+                        <td>0 ₫</td>
+                        <td>45,000 ₫</td>
+                        <td>2.5 kg</td>
+                        <td>18,000 ₫/kg</td>
+                    </tr>
+                    <tr>
+                        <td>GHN</td>
+                        <td>LOG-2602</td>
+                        <td>4.2 Ngày</td>
+                        <td><span class="badge badge-warning">Đang giao</span></td>
+                        <td>12,500,000 ₫</td>
+                        <td>12,500,000 ₫</td>
+                        <td>450 kg</td>
+                        <td>27,700 ₫/kg</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="du-bao" class="tab-content">
+        <div class="filter-panel">
+            <div class="filter-group">
+                <label>Thời gian dự báo</label>
+                <select>
+                    <option>Tháng tới</option>
+                    <option>Quý tới</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Nhóm Sản Phẩm</label>
+                <select>
+                    <option>-- Tất cả nhóm --</option>
+                    <option>Thiết bị Gia dụng</option>
+                    <option>Phụ kiện Điện thoại</option>
+                    <option>Văn phòng phẩm</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-title">Chỉ số so sánh & Độ chính xác</div>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Forecast Demand (Dự báo)</div>
+                <div class="kpi-value">12,500</div>
+                <div class="kpi-subtext">Sản phẩm dự kiến tiêu thụ</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Actual Demand (Thực tế)</div>
+                <div class="kpi-value">11,920</div>
+                <div class="kpi-subtext">Sản phẩm đã tiêu thụ thực tế</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Forecast Accuracy (Độ chính xác)</div>
+                <div class="kpi-value">95.36%</div>
+                <div class="progress-bar-container"><div class="progress-bar" style="width: 95.36%; background-color: var(--secondary-color);"></div></div>
+            </div>
+        </div>
+
+        <div class="section-title">Kết quả phân tích & Đề xuất nhập hàng</div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nhóm Sản Phẩm</th>
+                        <th>Dự Báo (Tháng Tới)</th>
+                        <th>Tồn Kho An Toàn</th>
+                        <th>Đề Xuất Nhập Hàng (Số Lượng)</th>
+                        <th>Ưu Tiên Đặt Hàng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Thiết bị Gia dụng</td>
+                        <td>4,500 pcs</td>
+                        <td>800 pcs</td>
+                        <td><strong style="color: var(--primary-color)">3,200 pcs</strong></td>
+                        <td><span class="badge badge-info">Bình thường</span></td>
+                    </tr>
+                    <tr>
+                        <td>Phụ kiện Điện thoại</td>
+                        <td>8,000 pcs</td>
+                        <td>1,500 pcs</td>
+                        <td><strong style="color: var(--primary-color)">7,800 pcs</strong></td>
+                        <td><span class="badge badge-danger">Khẩn cấp (Sắp cháy hàng)</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Hàm chuyển tab dữ liệu
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // --- KHỞI TẠO BIỂU ĐỒ CHART.JS CHO TAB TỒN KHO ---
+        window.onload = function() {
+            // 1. Biểu đồ cột Trái: Giá trị tồn theo Kho
+            const ctxKho = document.getElementById('chartKho').getContext('2d');
+            new Chart(ctxKho, {
+                type: 'bar',
+                data: {
+                    labels: ['Kho VN', 'Kho AMZ', 'Kho SHIPHUB', 'Kho CAM'],
+                    datasets: [{
+                        label: 'Giá trị tồn (Triệu ₫)',
+                        data: [550, 380, 220, 100],
+                        backgroundColor: ['#3498db', '#18bc9c', '#f39c12', '#e74c3c'],
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // 2. Biểu đồ Phải: Giá trị tồn theo Tốc độ bán (Dạng biểu đồ tròn/Donut)
+            const ctxTocDo = document.getElementById('chartTocDo').getContext('2d');
+            new Chart(ctxTocDo, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Bán tốt', 'Bán trung bình', 'Bán chậm', 'Không bán được'],
+                    datasets: [{
+                        data: [650, 350, 180, 70],
+                        backgroundColor: ['#2ecc71', '#3498db', '#f39c12', '#e74c3c'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>
